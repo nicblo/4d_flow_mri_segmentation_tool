@@ -21,7 +21,7 @@ PIL
 Random Walker GUI
 
 Main file to run: 	random_walker_gui.py
-Requires: 		functions.py, random_walker_3D.py, random_walker_4D.py
+Requires: 		functions.py, random_walker_3D.py, random_walker_4D.py, data in random_walker parent folder (ibt_4dFlow)
 
 Workflow for best segmentation result:
 
