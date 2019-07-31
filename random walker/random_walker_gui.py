@@ -5,6 +5,7 @@ Created on Mon Apr  8 17:27:23 2019
 @author: nblon
 """
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 import functions as pl
 import random_walker_nb_4D as rw4D
@@ -13,6 +14,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 import time
 from mayavi import mlab as mlab
+import uuid
 
 #----------------------------------------------------------------------------------------------------------
 # 4D Random Walker Segmentation Tool for 4D MRI Flow Images
@@ -31,7 +33,7 @@ class MainWindow():
     focalpoint = (75,70,10)
     
     # set subject name to be loaded
-    subject = 'AH' #.....
+    subject = 'AH' # AH, CB, DG, JR, LT, 1, 2
     
     #parec data contains the arrays with m,p and s (velocity components) as well as ints with the number of timesteps and number of slices
     #load parec datsa using custom function in pl (see imports)
@@ -426,6 +428,14 @@ class MainWindow():
         self.bg_coord_list = []
         
         return
+    #----------------------------------------------------------------------------------------------------------   
+    
+    def save_seg(self):
+        save_path = os.path.join(os.getcwd(),'output')
+        seg_name = 'seg_{}.npy'.format(uuid.uuid4())
+        
+        np.save(os.path.join(save_path,seg_name),np.round(self.rw_labels[0,...]))
+        return
         
     #----------------------------------------------------------------------------------------------------------
     # Here all the elements of the GUI are defined (Buttons, Sliders, Canvas and Labels) with their sizes, values and callbacks (command)
@@ -497,6 +507,9 @@ class MainWindow():
         
         self.button9 = Button(main, text="Load segm -> markers", width=20, command= lambda: self.load_seg_mark())
         self.button9.grid(row=8, column=1, padx=5, pady=5)
+        
+        self.button10 = Button(main, text="Save segmentation", width=20, command= lambda: self.save_seg())
+        self.button10.grid(row=9, column=1, padx=5, pady=5)
     
     
         self.button_last = Button(main, text='Quit', width=20, command=main.destroy)

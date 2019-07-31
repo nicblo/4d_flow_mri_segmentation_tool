@@ -19,7 +19,7 @@ from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure, ColumnDataSource
 from bokeh.io import curdoc
 from scipy.ndimage import gaussian_filter
-import random_walker_nb_v2 as rw
+import random_walker_nb_3D as rw
 from scipy.io import loadmat
 import scipy.ndimage.morphology as morph
 import skimage.morphology as mp

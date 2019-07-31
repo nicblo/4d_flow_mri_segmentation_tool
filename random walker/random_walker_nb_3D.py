@@ -17,7 +17,7 @@ import numpy as np
 from scipy import sparse, ndimage as ndi
 from skimage._shared.utils import warn
 #import matplotlib.pyplot as plt
-import parecload as pl
+import functions as pl
 
 
 # executive summary for next code block: try to import umfpack from
