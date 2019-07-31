@@ -471,11 +471,11 @@ class MainWindow():
         
         self.slider3 = Scale(main, from_=0, to=360,resolution=20, length=200, tickinterval=90, orient=HORIZONTAL,label = "Azimuth", command= lambda x: self.update_3Dimage())
         self.slider3.set(0)
-        self.slider3.grid(row=9,column =1,padx=5,pady=5)
+        self.slider3.grid(row=10,column =1,padx=5,pady=5)
         
         self.slider4 = Scale(main, from_=0, to=180,resolution=20, length=200, tickinterval=90, orient=HORIZONTAL,label = "Elevation", command= lambda x: self.update_3Dimage())
         self.slider4.set(180)
-        self.slider4.grid(row=10,column =1,padx=5,pady=5)
+        self.slider4.grid(row=11,column =1,padx=5,pady=5)
         
         self.button0 = Button(main, text='Run 4D', width=20, command= lambda : self.run_random_walker4D())
         self.button0.grid(row=2,column =1,padx=5,pady=5)
