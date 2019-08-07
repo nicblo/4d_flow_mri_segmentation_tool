@@ -60,10 +60,10 @@ def load_parec_data(subject = 'AH'):
         path_m = basepath + 'lo_27112015_1256300_2_2_wipqflow_fb_experiment1V4_M.rec'
         path_p = basepath + 'lo_27112015_1256300_2_2_wipqflow_fb_experiment1V4_P.rec'
         
-        #if wrong input is given, break function and return the warning in console
+     #if wrong input is given, break function and return the warning in console
     else:
-        warn('Invalid subject, valid subjects are: AH,CB,DG,JR and LT')
-    
+        warn('Invalid subject')
+
     #load the data into arrays
     data_s = nib.parrec.load(path_s).get_data()
     data_m = nib.parrec.load(path_m).get_data()
@@ -73,10 +73,30 @@ def load_parec_data(subject = 'AH'):
     num_times = int(data_s.shape[3]/2)
     num_slices = int(data_s.shape[2])
     
-    #return the desired vector of the laoded data
+    #return the desired vector of the loaded data
     parec_data = [data_m,data_p,data_s,num_times,num_slices]
-    
+   
     return parec_data
+
+def load_npy_data(subject):
+    cwd = os.getcwd()
+    extension = '../ibt_4dFlow/'+'MRT Daten Bern'
+    img_path = os.path.join(cwd,extension)
+    npy_files_list = []
+    for _, _, file_names in os.walk(img_path):
+        for file in file_names:
+            if '.npy' in file:
+                npy_files_list.append(file)
+#    print(len(npy_files_list))
+    #use passed subject numer to index into files list          
+    path = img_path+'/{}'.format(npy_files_list[subject])
+    array = np.load(path)
+    
+#    plt.figure()
+#    plt.imshow(array[:,:,15,20,2], cmap = 'Greys')
+#    plt.show()
+    
+    return array
 
 def create_separated_arrays(parec_data):
     data_m = parec_data[0]
@@ -148,7 +168,7 @@ def erode_seg_markers(rw_data):
     thinned_seg = np.zeros(rw_data.shape)
     for i in range(rw_data.shape[2]):
         thinned_seg[:,:,i] = mp.thin(closed_seg[:,:,i],max_iter = 5)
-    eroded_seg = morph.binary_erosion(closed_seg,structure=erosion_kernel,iterations=3)
+#    eroded_seg = morph.binary_erosion(closed_seg,structure=erosion_kernel,iterations=3)
     dilated_seg = morph.binary_dilation(closed_seg,structure=dilation_kernel,iterations=6)
     
        
@@ -406,32 +426,27 @@ def rescale_markers(markers,array_dim):
 #function to normalize the input arrays (intensity and velocity) to a range between 0 to 1 and -1 to 1
 #magnitude normalization is a simple division by the largest value
 #velocity normalization first calculates the largest magnitude and then uses the components of this vector to normalize the x,y and z directions seperately
-def normalize_arrays(arrays):
+def normalize_arrays2(arrays):
+    
     #dimension of normalized_arrays: 128 x 128 x 20 x 25 x 4
     normalized_arrays = np.zeros((arrays.shape))
+    
     #normalize magnitude channel
     normalized_arrays[...,0] = arrays[...,0]/np.amax(arrays[...,0])
+    
     #normalize velocities
-    #calculate the velocity magnitude at each voxel
-    velocity_arrays = gaussian_filter(np.array(arrays[...,1:4]),0.5)
-    
-    velocity_mag_array = np.sqrt(np.square(velocity_arrays[...,0])+np.square(velocity_arrays[...,1])+np.square(velocity_arrays[...,2]))
+    # extract the velocities in the 3 directions
+    velocity_arrays = np.array(arrays[...,1:4])
+    # denoise the velocity vectors
+    velocity_arrays_denoised = gaussian_filter(velocity_arrays, 0.5)
+    # compute per-pixel velocity magnitude    
+    velocity_mag_array = np.linalg.norm(velocity_arrays_denoised, axis=-1)
+    # velocity_mag_array = np.sqrt(np.square(velocity_arrays[...,0])+np.square(velocity_arrays[...,1])+np.square(velocity_arrays[...,2]))
     #find max value of 95th percentile (to minimize effect of outliers) of magnitude array and its index
-    vpercentile =  np.percentile(velocity_mag_array,95)
-    velocity_mag_array[velocity_mag_array>vpercentile] = 1.0
-    vmax = np.amax(velocity_mag_array)
-    
-    normalized_arrays[...,1] = velocity_arrays[...,0]
-    normalized_arrays[...,2] = velocity_arrays[...,1]
-    normalized_arrays[...,3] = velocity_arrays[...,2]
-        
-    normalized_arrays[normalized_arrays>vmax] = vmax
-    normalized_arrays[normalized_arrays<-vmax] = -vmax
-    
-    normalized_arrays[...,1] /= vmax
-    normalized_arrays[...,2] /= vmax
-    normalized_arrays[...,3] /= vmax
-    
+    vpercentile =  np.percentile(velocity_mag_array, 95)    
+    normalized_arrays[...,1] = velocity_arrays_denoised[...,0] / vpercentile
+    normalized_arrays[...,2] = velocity_arrays_denoised[...,1] / vpercentile
+    normalized_arrays[...,3] = velocity_arrays_denoised[...,2] / vpercentile
     
 #    print('normalized arrays: max=' + str(np.amax(normalized_arrays)) + ' min:' + str(np.amin(normalized_arrays)))
     
@@ -464,7 +479,9 @@ def dot_products(data):
     return array
 
 def norm(x,y,z):
-    normed_array = np.sqrt(np.square(x)+np.square(y)+np.square(z))
+    
+    normed_array = np.linalg.norm([x,y,z], axis=0)
+#    normed_array = np.sqrt(np.square(x)+np.square(y)+np.square(z))
     return normed_array
     
 def compute_similarity_maps(data,a,b,c):

@@ -33,7 +33,7 @@ class MainWindow():
     focalpoint = (75,70,10)
     
     # set subject name to be loaded
-    subject = 'AH' # AH, CB, DG, JR, LT, 1, 2
+    subject = 'JR' # AH, CB, DG, JR, LT, F1, F2
     
     #parec data contains the arrays with m,p and s (velocity components) as well as ints with the number of timesteps and number of slices
     #load parec datsa using custom function in pl (see imports)
@@ -50,8 +50,9 @@ class MainWindow():
     #extract the array that contains the magnitude images
     magnitude_array = separated_arrays[...,0]
     img_array = separated_arrays[...,0]
+    print('img_data shape: {}'.format(img_array.shape))
     
-    #get arraay dimensions
+    #get array dimensions
     x_size = magnitude_array.shape[0]
     y_size = magnitude_array.shape[1]
     z_size = magnitude_array.shape[2]
@@ -66,6 +67,7 @@ class MainWindow():
     
     #create placeholders / initialize variables for the different arrays and lists that the GUI uses
     gt_data = pl.load_gt_data(subject = subject)
+    print('gt data.shape: {}'.format(gt_data.shape))
     rw_data = np.zeros(magnitude_array.shape)
     flow_data1 = np.zeros(magnitude_array.shape)
     flow_data2 = np.zeros(magnitude_array.shape)
@@ -432,7 +434,7 @@ class MainWindow():
     
     def save_seg(self):
         save_path = os.path.join(os.getcwd(),'output')
-        seg_name = 'seg_{}.npy'.format(uuid.uuid4())
+        seg_name = 'rw_seg_{}.npy'.format(self.subject)
         
         np.save(os.path.join(save_path,seg_name),np.round(self.rw_labels[0,...]))
         return

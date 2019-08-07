@@ -127,8 +127,12 @@ def _compute_magnitude_weight_4d(data, spacing,eps=1.e-6, b=10.0):
     B_data_1 = np.zeros(data.shape)
 
     B_coords_1 = np.nonzero(data[...,0]>0.1)
+    B_coords_1 = np.nonzero(data[...,0])
     B_data_1[B_coords_1] = True
     B_data = B_data_1*data
+#    print('data : np.unique = '+str(np.unique(data))) #[0.]
+#    print('B_data_1 : np.unique = '+str(np.unique(B_data_1))) #[0.]
+#    print('B_data : np.unique = '+str(np.unique(B_data))) #[0.]
     
     delta_v = 0
     delta_v = _compute_eucl_dist_4d(B_data, spacing, b)
@@ -183,10 +187,10 @@ def _compute_delta_I_4d(data, spacing, a):
 def _compute_eucl_dist_4d(data, spacing, b):
     #compute the euclidean distances between all adjacent points
     #compute distance between adjacent points in v_x array
-    dist_x_deep = np.abs(data[:, :, :-1, :, 1] - data[:, :, 1:, :,1]).ravel() / spacing[2]
-    dist_x_right =np.abs(data[:, :-1, :, :, 1] - data[:, 1:, :, :,1]).ravel() / spacing[1]
-    dist_x_down = np.abs(data[:-1, :, :, :, 1] - data[1:, :, :, :,1]).ravel() / spacing[0]
-    dist_x_time = np.abs(data[:, :, :, :-1, 1] - data[:, :, :,1:, 1]).ravel() / spacing[3]
+    dist_x_deep = np.abs(data[:, :, :-1, :, 1] - data[:, :, 1:, :, 1]).ravel() / spacing[2]
+    dist_x_right =np.abs(data[:, :-1, :, :, 1] - data[:, 1:, :, :, 1]).ravel() / spacing[1]
+    dist_x_down = np.abs(data[:-1, :, :, :, 1] - data[1:, :, :, :, 1]).ravel() / spacing[0]
+    dist_x_time = np.abs(data[:, :, :, :-1, 1] - data[:, :, :,1:,  1]).ravel() / spacing[3]
     
     #compute distance between adjacent points in v_y array
     dist_y_deep = np.abs(data[:, :, :-1, :, 2] - data[:, :, 1:, :, 2]).ravel() / spacing[2]
@@ -205,6 +209,9 @@ def _compute_eucl_dist_4d(data, spacing, b):
     dist_right = np.sqrt(np.square(dist_x_right) + np.square(dist_y_right) + np.square(dist_z_right))
     dist_down = np.sqrt(np.square(dist_x_down) + np.square(dist_y_down) + np.square(dist_z_down))
     dist_time = np.sqrt(np.square(dist_x_time) + np.square(dist_y_time) + np.square(dist_z_time))
+    
+#    print('data[...,1:], np.unique: '+str(np.unique(data[...,1]))) #[0.]
+#    print('data[...,1:].std,: '+str((data[...,1].std)))
     
     dist_deep *= b/data[...,1:].std()
     dist_right *=b/data[...,1:].std()
@@ -229,10 +236,11 @@ def _compute_dotproduct_4d(data, spacing, c):
     dot_time_magn = ((pl.norm(data[:, :, :, :-1, 1],data[:, :, :, :-1, 2],data[:, :, :, :-1, 3])).ravel()*(pl.norm(data[:, :, :, 1:, 1],data[:, :, :, 1:, 2],data[:, :, :, 1:, 3])).ravel())
     
     #add residual to avoid dividing by zero
-    dot_deep_magn += 1e-6
-    dot_right_magn+= 1e-6
-    dot_down_magn += 1e-6
-    dot_time_magn += 1e-6
+    eps = 1e-6
+    dot_deep_magn += eps
+    dot_right_magn+= eps
+    dot_down_magn += eps
+    dot_time_magn += eps
     
     #normalize the dot products
     dot_deep_norm = dot_deep/dot_deep_magn
